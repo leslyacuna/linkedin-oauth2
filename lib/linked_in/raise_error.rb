@@ -8,7 +8,8 @@ module LinkedIn
         fail(LinkedIn::ArgumentError, MultiJson.load(response.body)['message'] || LinkedIn::ErrorMessages.argument_missing) if response.body =~ /is missing/i
         fail(LinkedIn::InvalidRequest, MultiJson.load(response.body)['message'] || LinkedIn::ErrorMessages.arguments_malformed)
       when 401
-        fail LinkedIn::UnauthorizedError, response.body
+        response_content = MultiJson.load(response.body)
+        fail LinkedIn::UnauthorizedError, "#{response_content['message']} (error_code: #{response_content['errorCode']}, request_id: #{response_content['requestId']})"
       when 403
         fail LinkedIn::ThrottleError if response.body =~ /throttle/i
         fail LinkedIn::PermissionsError, MultiJson.load(response.body)['message'] || LinkedIn::ErrorMessages.not_permitted
