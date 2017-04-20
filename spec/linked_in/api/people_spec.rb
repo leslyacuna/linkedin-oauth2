@@ -61,7 +61,7 @@ describe LinkedIn::People do
 
   # Errors
   it "errors on bad input" do
-    expect{api.profile("Bad input")}.to raise_error
+    expect{api.profile("Bad input")}.to raise_error(URI::InvalidURIError)
   end
   it "errors on email deprecation" do
     msg = LinkedIn::ErrorMessages.deprecated
@@ -185,5 +185,5 @@ describe LinkedIn::People do
       verify result
       expect(result["all"].length).to eq 2
     end
-  end  
+  end
 end
