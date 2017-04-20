@@ -3,19 +3,15 @@ require 'faraday'
 module LinkedIn
   class RaiseError < Faraday::Response::RaiseError
     def on_complete(response)
-      status_code = response.status.to_i
-      if status_code == 403 && response.body =~ /throttle/i
-        fail LinkedIn::ThrottleError
-      elsif [400,403].include?(status_code)
-        body = MultiJson.load(response.body)
-
-        if status_code == 400 && response.body =~ /is missing/i        
-          fail LinkedIn::ArgumentError, body['message'] || LinkedIn::ErrorMessages.argument_missing
-        elsif status_code == 400
-          fail LinkedIn::InvalidRequest, body['message'] || LinkedIn::ErrorMessages.arguments_malformed
-        else # status_code == 403
-          fail LinkedIn::PermissionsError, body['message'] || LinkedIn::ErrorMessages.not_permitted
-        end
+      case response.status.to_i
+      when 400
+        fail(LinkedIn::ArgumentError, MultiJson.load(response.body)['message'] || LinkedIn::ErrorMessages.argument_missing) if response.body =~ /is missing/i
+        fail(LinkedIn::InvalidRequest, MultiJson.load(response.body)['message'] || LinkedIn::ErrorMessages.arguments_malformed)
+      when 401
+        fail LinkedIn::UnauthorizedError, response.body
+      when 403
+        fail LinkedIn::ThrottleError if response.body =~ /throttle/i
+        fail LinkedIn::PermissionsError, MultiJson.load(response.body)['message'] || LinkedIn::ErrorMessages.not_permitted
       else
         super
       end

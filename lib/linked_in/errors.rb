@@ -5,12 +5,15 @@ module LinkedIn
 
   # Raised when we know requests will be malformed
   class InvalidRequest < StandardError; end
-  
+
   # Raised when we get a throttle error from the API
   class ThrottleError < StandardError; end
 
   # Raised When LinkedIn request params are missing
   class ArgumentError < StandardError; end
+
+  # Raised When LinkedIn returns a 401 for a REST API call
+  class UnauthorizedError < StandardError; end
 
   # Raised When LinkedIn returns a 403 for a REST API call
   class PermissionsError < StandardError; end
@@ -51,11 +54,11 @@ module LinkedIn
     @argument_missing = "An argument is missing for this REST API call"
 
     @not_permitted = "This user is not permitted to make this REST API call"
-    
+
     def klass
-      
+
     end
-    
-    
+
+
   end
 end
